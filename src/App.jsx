@@ -80,9 +80,9 @@ export default function App() {
       />
 
       {/* Main Content Viewport: Adjust padding for desktop expanded (lg:pl-72 sm:lg:pl-80) vs mini-dock (lg:pl-20) */}
-      <div 
+      <div
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out pl-0 ${
-          sidebarOpen ? 'lg:pl-72 sm:lg:pl-80' : 'lg:pl-20'
+          sidebarOpen ? 'lg:pl-[19rem] sm:lg:pl-[21rem]' : 'lg:pl-20'
         }`}
       >
         
@@ -95,6 +95,9 @@ export default function App() {
           onPathChange={setCurrentPath}
           currentTheme={theme}
           onOpenThemeModal={() => setThemeModalOpen(true)}
+          onViewChange={(view) => {
+            setActiveView(view);
+          }}
         />
 
         {/* Dynamic Page Views */}
