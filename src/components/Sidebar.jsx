@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import { 
   BookOpen, 
   Palette, 
@@ -19,24 +20,21 @@ export default function Sidebar({
   currentPath, 
   onPathChange, 
   currentTheme, 
-  onOpenThemeModal,
-  activeView, 
-  onViewChange 
+  onOpenThemeModal
 }) {
   const isHindiToUrdu = currentPath === 'hindi-to-urdu';
 
   const navItems = [
-    { id: 'intro', label: 'Overview', icon: BookOpen, desc: 'Script comparison & guide' },
-    { id: 'learn', label: 'Alphabet Grid', icon: Layers, desc: 'Phonetic letter explorer' },
-    { id: 'digits', label: 'Digits (0–9)', icon: Hash, desc: 'Numerals in Hindi & Urdu' },
-    { id: 'guides', label: 'Linguistic Rules', icon: Compass, desc: 'Aspiration, Nuqta & Homophones' },
-    { id: 'whiteboard', label: 'Whiteboard Canvas', icon: PenTool, desc: 'Calligraphic stroke tracing' },
-    { id: 'quiz', label: 'Script Quiz', icon: GraduationCap, desc: 'Interactive recognition drill' },
-    { id: 'sandbox', label: 'Word Bridge', icon: ArrowRightLeft, desc: 'Ligatures & vocabulary' },
+    { id: 'intro', to: '/', label: 'Overview', icon: BookOpen, desc: 'Script comparison & guide' },
+    { id: 'learn', to: '/learn', label: 'Alphabet Grid', icon: Layers, desc: 'Phonetic letter explorer' },
+    { id: 'digits', to: '/digits', label: 'Digits (0–9)', icon: Hash, desc: 'Numerals in Hindi & Urdu' },
+    { id: 'guides', to: '/guides', label: 'Linguistic Rules', icon: Compass, desc: 'Aspiration, Nuqta & Homophones' },
+    { id: 'whiteboard', to: '/whiteboard', label: 'Whiteboard Canvas', icon: PenTool, desc: 'Calligraphic stroke tracing' },
+    { id: 'quiz', to: '/quiz', label: 'Script Quiz', icon: GraduationCap, desc: 'Interactive recognition drill' },
+    { id: 'sandbox', to: '/sandbox', label: 'Word Bridge', icon: ArrowRightLeft, desc: 'Ligatures & vocabulary' },
   ];
 
-  const handleNavClick = (viewId) => {
-    onViewChange(viewId);
+  const handleNavClick = () => {
     // On mobile / tablet screens, close the sidebar drawer after selection
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       onClose();
@@ -69,8 +67,9 @@ export default function Sidebar({
           {isOpen && (
             <>
               {/* Mobile: Full Logo as currently */}
-              <div 
-                onClick={() => handleNavClick('intro')}
+              <NavLink
+                to="/"
+                onClick={handleNavClick}
                 className="flex lg:hidden items-center gap-2.5 cursor-pointer group flex-shrink-0 select-none"
                 title="AksharNama"
               >
@@ -82,7 +81,7 @@ export default function Sidebar({
                     AksharNama
                   </div>
                 </div>
-              </div>
+              </NavLink>
 
               {/* Laptop & Wide Screen: Says the word "Menu" instead of repeating logo */}
               <div className="hidden lg:flex items-center gap-2 select-none pl-1">
@@ -138,32 +137,39 @@ export default function Sidebar({
         <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar p-2.5 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeView === item.id;
 
             return (
-              <button
+              <NavLink
                 key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`w-full flex items-center ${ isOpen ? 'gap-3' : 'gap-0' } justify-center px-3 py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-200 overflow-hidden ${
-                  isActive
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-base-content/75 hover:text-base-content hover:bg-base-200/60'
-                }`}
+                to={item.to}
+                end={item.to === '/'}
+                onClick={handleNavClick}
+                className={({ isActive }) =>
+                  `w-full flex items-center ${ isOpen ? 'gap-3' : 'gap-0' } justify-center px-3 py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-200 overflow-hidden ${
+                    isActive
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-base-content/75 hover:text-base-content hover:bg-base-200/60'
+                  }`
+                }
                 title={!isOpen ? item.label : undefined}
                 aria-label={item.label}
               >
-                <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-base-content/60'}`} />
-                </div>
-                <div className={`flex-1 min-w-0 transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
-                  isOpen ? 'opacity-100 max-w-[200px] translate-x-0' : 'opacity-0 max-w-0 -translate-x-2'
-                }`}>
-                  <div className="truncate leading-tight">{item.label}</div>
-                  <div className={`text-[10px] truncate ${isActive ? 'text-white/80' : 'text-base-content/45'}`}>
-                    {item.desc}
-                  </div>
-                </div>
-              </button>
+                {({ isActive }) => (
+                  <>
+                    <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+                      <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-base-content/60'}`} />
+                    </div>
+                    <div className={`flex-1 min-w-0 transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+                      isOpen ? 'opacity-100 max-w-[200px] translate-x-0' : 'opacity-0 max-w-0 -translate-x-2'
+                    }`}>
+                      <div className="truncate leading-tight">{item.label}</div>
+                      <div className={`text-[10px] truncate ${isActive ? 'text-white/80' : 'text-base-content/45'}`}>
+                        {item.desc}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </NavLink>
             );
           })}
         </div>

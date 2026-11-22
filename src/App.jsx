@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import HeaderBar from './components/HeaderBar';
 import IntroLanding from './components/IntroLanding';
 import AlphabetGrid from './components/AlphabetGrid';
 import DigitsView from './components/DigitsView';
-import DetailedLetterModal from './components/DetailedLetterModal';
-import InteractiveWhiteboard from './components/InteractiveWhiteboard';
 import LinguisticGuidesView from './components/LinguisticGuidesView';
-import ScriptQuiz from './components/ScriptQuiz';
-import WordBridgeSandbox from './components/WordBridgeSandbox';
+import DetailedLetterModal from './components/DetailedLetterModal';
 import ThemeModal from './components/ThemeModal';
-import { LEARNING_ENTRIES, DIGITS_DATA } from './data/alphabetData';
+import { LEARNING_ENTRIES } from './data/alphabetData';
+
+const InteractiveWhiteboard = lazy(() => import('./components/InteractiveWhiteboard'));
+const ScriptQuiz = lazy(() => import('./components/ScriptQuiz'));
+const WordBridgeSandbox = lazy(() => import('./components/WordBridgeSandbox'));
 
 export default function App() {
   // Theme state: Default strictly to 'dark' with #157F1A green primary!
@@ -26,9 +28,6 @@ export default function App() {
     return localStorage.getItem('hindustani_path') || 'hindi-to-urdu';
   });
 
-  // Active view: 'intro' | 'learn' | 'digits' | 'guides' | 'whiteboard' | 'quiz' | 'sandbox'
-  const [activeView, setActiveView] = useState('intro');
-
   // Sidebar expanded / minimized state
   // On desktop: true = expanded (w-72), false = mini-dock (w-20)
   // On mobile (<1024px): true = open drawer, false = closed off-canvas
@@ -42,9 +41,6 @@ export default function App() {
   // Modal state for detailed letter inspection
   const [selectedLetter, setSelectedLetter] = useState(null);
 
-  // Pre-selected letter/digit for whiteboard practice
-  const [whiteboardLetter, setWhiteboardLetter] = useState(null);
-
   // Sync theme to HTML document element
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -56,9 +52,22 @@ export default function App() {
     localStorage.setItem('hindustani_path', currentPath);
   }, [currentPath]);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const routeToView = {
+    '/': 'intro',
+    '/learn': 'learn',
+    '/digits': 'digits',
+    '/guides': 'guides',
+    '/whiteboard': 'whiteboard',
+    '/quiz': 'quiz',
+    '/sandbox': 'sandbox',
+  };
+  const activeView = routeToView[location.pathname] || 'intro';
+
   const handleOpenWhiteboardForItem = (item) => {
-    setWhiteboardLetter(item);
-    setActiveView('whiteboard');
+    navigate('/whiteboard', { state: { initialLetter: item } });
   };
 
   return (
@@ -74,9 +83,6 @@ export default function App() {
         currentTheme={theme}
         onOpenThemeModal={() => setThemeModalOpen(true)}
         activeView={activeView}
-        onViewChange={(view) => {
-          setActiveView(view);
-        }}
       />
 
       {/* Main Content Viewport: Adjust padding for desktop expanded (lg:pl-72 sm:lg:pl-80) vs mini-dock (lg:pl-20) */}
@@ -95,63 +101,78 @@ export default function App() {
           onPathChange={setCurrentPath}
           currentTheme={theme}
           onOpenThemeModal={() => setThemeModalOpen(true)}
-          onViewChange={(view) => {
-            setActiveView(view);
-          }}
         />
 
         {/* Dynamic Page Views */}
         <main className={`flex-1 ${activeView === 'quiz' ? 'pb-2 flex flex-col justify-center' : 'pb-16'}`}>
-          {activeView === 'intro' && (
-            <IntroLanding
-              currentPath={currentPath}
-              onPathSelect={setCurrentPath}
-              onStartLearning={() => setActiveView('learn')}
-              onOpenDigits={() => setActiveView('digits')}
-            />
-          )}
-
-          {activeView === 'learn' && (
-            <AlphabetGrid
-              currentPath={currentPath}
-              onSelectLetter={setSelectedLetter}
-              onOpenWhiteboard={handleOpenWhiteboardForItem}
-              onOpenGuides={() => setActiveView('guides')}
-            />
-          )}
-
-          {activeView === 'digits' && (
-            <DigitsView
-              currentPath={currentPath}
-              onOpenWhiteboard={handleOpenWhiteboardForItem}
-            />
-          )}
-
-          {activeView === 'guides' && (
-            <LinguisticGuidesView
-              currentPath={currentPath}
-              onOpenWhiteboard={handleOpenWhiteboardForItem}
-            />
-          )}
-
-          {activeView === 'whiteboard' && (
-            <InteractiveWhiteboard
-              currentPath={currentPath}
-              initialLetter={whiteboardLetter}
-              onBackToGrid={() => setActiveView('learn')}
-            />
-          )}
-
-          {activeView === 'quiz' && (
-            <ScriptQuiz
-              currentPath={currentPath}
-              onOpenWhiteboard={handleOpenWhiteboardForItem}
-            />
-          )}
-
-          {activeView === 'sandbox' && (
-            <WordBridgeSandbox currentPath={currentPath} />
-          )}
+          <Suspense fallback={<div className="flex min-h-64 items-center justify-center text-sm text-base-content/60" role="status">Loading page...</div>}>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <IntroLanding
+                    currentPath={currentPath}
+                    onPathSelect={setCurrentPath}
+                    onStartLearning={() => navigate('/learn')}
+                    onOpenDigits={() => navigate('/digits')}
+                  />
+                }
+              />
+              <Route
+                path="/learn"
+                element={
+                  <AlphabetGrid
+                    currentPath={currentPath}
+                    onSelectLetter={setSelectedLetter}
+                    onOpenWhiteboard={handleOpenWhiteboardForItem}
+                    onOpenGuides={() => navigate('/guides')}
+                  />
+                }
+              />
+              <Route
+                path="/digits"
+                element={
+                  <DigitsView
+                    currentPath={currentPath}
+                    onOpenWhiteboard={handleOpenWhiteboardForItem}
+                  />
+                }
+              />
+              <Route
+                path="/guides"
+                element={
+                  <LinguisticGuidesView
+                    currentPath={currentPath}
+                    onOpenWhiteboard={handleOpenWhiteboardForItem}
+                  />
+                }
+              />
+              <Route
+                path="/whiteboard"
+                element={
+                  <InteractiveWhiteboard
+                    currentPath={currentPath}
+                    initialLetter={location.state?.initialLetter || null}
+                    onBackToGrid={() => navigate('/learn')}
+                  />
+                }
+              />
+              <Route
+                path="/quiz"
+                element={
+                  <ScriptQuiz
+                    currentPath={currentPath}
+                    onOpenWhiteboard={handleOpenWhiteboardForItem}
+                  />
+                }
+              />
+              <Route
+                path="/sandbox"
+                element={<WordBridgeSandbox currentPath={currentPath} />}
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </main>
 
         {/* Detailed Letter Inspection Modal */}
