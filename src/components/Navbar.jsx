@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
   Palette, 
@@ -14,11 +15,20 @@ export default function Navbar({
   currentPath, 
   onPathChange, 
   currentTheme, 
-  onThemeChange, 
-  activeView, 
-  onViewChange 
+  onThemeChange
 }) {
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const routeToView = {
+    '/': 'intro',
+    '/learn': 'learn',
+    '/guides': 'guides',
+    '/whiteboard': 'whiteboard',
+    '/quiz': 'quiz',
+    '/sandbox': 'sandbox',
+  };
+  const activeView = routeToView[location.pathname] || 'intro';
 
   const themes = [
     { id: 'light', name: 'Light', desc: 'Minimal paper & ink', bg: '#ffffff', border: '#e2e8f0' },
@@ -36,7 +46,7 @@ export default function Navbar({
           
           {/* Logo & Branding */}
           <div 
-            onClick={() => onViewChange('intro')} 
+            onClick={() => navigate('/')} 
             className="flex items-center gap-3.5 cursor-pointer group"
           >
             <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-primary text-primary-content flex items-center justify-center font-black text-xl sm:text-2xl shadow-sm group-hover:scale-105 transition-transform duration-200 flex-shrink-0 font-sans tracking-tight">
@@ -58,7 +68,7 @@ export default function Navbar({
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-1 bg-base-200/50 p-1.5 rounded-2xl border border-base-300/60">
             <button
-              onClick={() => onViewChange('intro')}
+              onClick={() => navigate('/')}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
                 activeView === 'intro'
                   ? 'bg-primary text-primary-content shadow-sm'
@@ -70,7 +80,7 @@ export default function Navbar({
             </button>
 
             <button
-              onClick={() => onViewChange('learn')}
+              onClick={() => navigate('/learn')}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
                 activeView === 'learn'
                   ? 'bg-primary text-primary-content shadow-sm'
@@ -82,7 +92,7 @@ export default function Navbar({
             </button>
 
             <button
-              onClick={() => onViewChange('guides')}
+              onClick={() => navigate('/guides')}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
                 activeView === 'guides'
                   ? 'bg-primary text-primary-content shadow-sm'
@@ -94,7 +104,7 @@ export default function Navbar({
             </button>
 
             <button
-              onClick={() => onViewChange('whiteboard')}
+              onClick={() => navigate('/whiteboard')}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
                 activeView === 'whiteboard'
                   ? 'bg-primary text-primary-content shadow-sm'
@@ -106,7 +116,7 @@ export default function Navbar({
             </button>
 
             <button
-              onClick={() => onViewChange('quiz')}
+              onClick={() => navigate('/quiz')}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
                 activeView === 'quiz'
                   ? 'bg-primary text-primary-content shadow-sm'
@@ -118,7 +128,7 @@ export default function Navbar({
             </button>
 
             <button
-              onClick={() => onViewChange('sandbox')}
+              onClick={() => navigate('/sandbox')}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
                 activeView === 'sandbox'
                   ? 'bg-primary text-primary-content shadow-sm'
@@ -229,7 +239,7 @@ export default function Navbar({
             return (
               <button
                 key={item.id}
-                onClick={() => onViewChange(item.id)}
+                onClick={() => navigate(item.id === 'intro' ? '/' : `/${item.id}`)}
                 className={`flex-shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
                   isActive
                     ? 'bg-primary text-primary-content shadow-sm'
